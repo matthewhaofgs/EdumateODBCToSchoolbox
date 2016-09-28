@@ -50,14 +50,12 @@ Module Main
     Public Sub WriteToTextFile(ByVal separator As String, commandStringIn As String)
 
         Dim ConnStr As String = readConnectionString()
-        'Dim ConnStr As String = "Provider=Microsoft.Jet.OleDb.4.0;" +
-        '             "Data Source=|DataDirectory|Northwind.mdb;"
         Dim commandString As String = commandStringIn
         Dim sep As String = separator
         Dim cleanString As String = Regex.Replace(commandString, "[^A-Za-z0-9\-/]", "")
 
 
-        Dim sw As New StreamWriter(".\" & cleanString)
+        Dim sw As New StreamWriter(".\" & cleanString & ".csv")
 
         Dim ConnectionString As String = readConnectionString()
         Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
@@ -68,7 +66,6 @@ Module Main
             command.Connection = conn
             command.CommandText = commandString
 
-            'read the data to our edumate data feed object
             Dim dr As System.Data.Odbc.OdbcDataReader
             dr = command.ExecuteReader
 

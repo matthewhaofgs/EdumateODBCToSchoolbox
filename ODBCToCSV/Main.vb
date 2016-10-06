@@ -54,9 +54,10 @@ Module Main
 
 
 
-        '      Call user()
+        Call user()
         Call timetableStructure()
-
+        Call timetable()
+        Call enrollment()
     End Sub
 
 
@@ -444,7 +445,7 @@ ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start
             dr = command.ExecuteReader
 
 
-
+            sw.WriteLine("Term Campus,Term Title,Term Start,Term Finish,Term Start Day Number,Period Day,Period Title,Period Start,Period Finish")
 
             Dim fields As Integer = dr.FieldCount - 1
             While dr.Read()
@@ -456,6 +457,134 @@ ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start
                 sw.WriteLine(outLine)
             End While
         End Using
+
+
+
+
+
+
+
+
+    End Sub
+
+
+    Sub timetable()
+        Dim commandstring As String
+        commandstring = "
+SELECT DISTINCT
+ substr(timetable.timetable, 6, 6) as CAMPUS1,	
+CONCAT(CONCAT(term.term, ' '), substr(timetable.timetable, 1, 4)) AS Expr2,
+cycle_day.day_index as DAY_NUMBER,
+	period.period as PERIOD_NUMBER,
+	concat(course.code,class.identifier) AS CLASS_CODE,
+	class.class,
+	room.code AS ROOM,
+staff.staff_number
+
+FROM period_class
+INNER JOIN period_cycle_day ON period_cycle_day.period_cycle_day_id = period_class.period_cycle_day_id
+INNER JOIN cycle_day ON cycle_day.cycle_day_id = period_cycle_day.cycle_day_id
+INNER JOIN period ON period.period_id = period_cycle_day.period_id
+INNER JOIN class ON class.class_id = period_class.class_id
+INNER JOIN course ON course.course_id = class.course_id
+INNER JOIN perd_cls_teacher ON perd_cls_teacher.period_class_id = period_class.period_class_id 
+	AND perd_cls_teacher.is_primary = 1
+INNER JOIN teacher ON teacher.teacher_id = perd_cls_teacher.teacher_id
+INNER JOIN staff ON staff.contact_id = teacher.contact_id
+INNER JOIN room ON room.room_id = period_class.room_id
+INNER JOIN timetable ON timetable.timetable_id = period_class.timetable_id
+INNER JOIN contact ON staff.contact_id = contact.contact_id
+INNER JOIN term_group on cycle_day.cycle_id = term_group.cycle_id
+INNER JOIN term ON term_group.term_id = term.term_id
+WHERE
+(
+	current date BETWEEN (
+	CASE
+		WHEN period_class.effective_start = timetable.computed_start_date
+		THEN timetable.computed_v_start_date
+		ELSE period_class.effective_start
+	END
+	)
+	AND period_class.effective_end
+)
+AND
+(
+	current date BETWEEN (
+	CASE
+		WHEN period_class.effective_start = timetable.computed_start_date
+		THEN timetable.computed_v_start_date
+		ELSE period_class.effective_start
+	END
+	)
+	AND timetable.computed_end_date
+)"
+
+        Dim sw As New StreamWriter(".\timetable.csv")
+
+        Dim ConnectionString As String = readConnectionString()
+        Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
+            conn.Open()
+
+            'define the command object to execute
+            Dim command As New System.Data.Odbc.OdbcCommand(commandstring, conn)
+            command.Connection = conn
+            command.CommandText = commandstring
+
+            Dim dr As System.Data.Odbc.OdbcDataReader
+            dr = command.ExecuteReader
+
+
+            sw.WriteLine("Term Campus,Term Title,Period Day,Period Title,Class Code,Class Title,Class Room,Teacher Code")
+
+            Dim fields As Integer = dr.FieldCount - 1
+            While dr.Read()
+                Dim sb As New StringBuilder()
+
+                Dim outLine As String
+
+                outLine = (dr.GetValue(0) & "," & dr.GetValue(1) & "," & dr.GetValue(2) & "," & dr.GetValue(3) & "," & dr.GetValue(4) & ",""" & dr.GetValue(5) & """," & dr.GetValue(6) & "," & dr.GetValue(7))
+                sw.WriteLine(outLine)
+            End While
+        End Using
+
+    End Sub
+
+    Sub enrollment()
+        Dim commandstring As String
+        commandstring = "
+SELECT DISTINCT CONCAT(course.code, class.identifier) AS CLASS_CODE, class.class, student.student_number
+FROM            OFGSODBC.CLASS_ENROLLMENT, OFGSODBC.STUDENT, class, course
+WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrollment.class_id = class.class_id) AND (class.course_id = course.course_id)"
+
+
+        Dim sw As New StreamWriter(".\enrollment.csv")
+
+        Dim ConnectionString As String = readConnectionString()
+        Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
+            conn.Open()
+
+            'define the command object to execute
+            Dim command As New System.Data.Odbc.OdbcCommand(commandstring, conn)
+            command.Connection = conn
+            command.CommandText = commandstring
+
+            Dim dr As System.Data.Odbc.OdbcDataReader
+            dr = command.ExecuteReader
+
+
+            sw.WriteLine("Class Code,Class Title,Student Code")
+
+            Dim fields As Integer = dr.FieldCount - 1
+            While dr.Read()
+                Dim sb As New StringBuilder()
+
+                Dim outLine As String
+
+                outLine = (dr.GetValue(0) & ",""" & dr.GetValue(1) & """," & dr.GetValue(2))
+                sw.WriteLine(outLine)
+            End While
+        End Using
+
 
 
 

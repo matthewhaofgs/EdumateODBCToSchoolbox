@@ -137,8 +137,8 @@ from schoolbox_students
 
                 If Not dr.IsDBNull(0) Then users.Last.Username = dr.GetValue(0)
                 If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
-                If Not dr.IsDBNull(2) Then users.Last.FirstName = dr.GetValue(2)
-                If Not dr.IsDBNull(3) Then users.Last.Surname = dr.GetValue(3)
+                If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
+                If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
                 If Not dr.IsDBNull(4) Then users.Last.DateOfBirth = ddMMYYYY_to_yyyyMMdd(dr.GetValue(4))
 
 
@@ -206,8 +206,8 @@ from schoolbox_staff
                 If Not dr.IsDBNull(0) Then users.Last.Username = dr.GetValue(0)
                 If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
                 If Not dr.IsDBNull(2) Then users.Last.Title = dr.GetValue(2)
-                If Not dr.IsDBNull(3) Then users.Last.FirstName = dr.GetValue(3)
-                If Not dr.IsDBNull(4) Then users.Last.Surname = dr.GetValue(4)
+                If Not dr.IsDBNull(3) Then users.Last.FirstName = """" & dr.GetValue(3) & """"
+                If Not dr.IsDBNull(4) Then users.Last.Surname = """" & dr.GetValue(4) & """"
                 If Not dr.IsDBNull(5) Then users.Last.House = dr.GetValue(5)
 
 
@@ -313,8 +313,8 @@ left join contact on carer.contact_id = contact.contact_id
                 users.Last.Postcode = ""
                 If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
                 If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
-                If Not dr.IsDBNull(2) Then users.Last.FirstName = dr.GetValue(2)
-                If Not dr.IsDBNull(3) Then users.Last.Surname = dr.GetValue(3)
+                If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
+                If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
 
 
                 For Each a In studentParents
@@ -363,8 +363,9 @@ left join contact on carer.contact_id = contact.contact_id
         Dim sep As String = ","
         Dim commandString As String
         commandString = "
-SELECT        substr(timetable.timetable, 6, 6) AS Expr1, CONCAT(CONCAT(term.term, ' '), substr(timetable.timetable, 1, 4)) AS Expr2, term.start_date, term.end_date, 
-                         term.cycle_start_day, cycle_day.day_index, period.period, period.start_time, period.end_time
+SELECT        CASE WHEN substr(timetable.timetable, 6, 6) = 'Year 1' THEN 'Senior' ELSE substr(timetable.timetable, 6, 6) END AS Expr1, CONCAT(CONCAT(term.term, ' '), 
+                         substr(timetable.timetable, 1, 4)) AS Expr2, term.start_date, term.end_date, term.cycle_start_day, cycle_day.day_index, period.period, period.start_time, 
+                         period.end_time
 FROM            OFGSODBC.TERM_GROUP, cycle_day, period_cycle_day, period, term, timetable
 WHERE        (start_date > '01/01/2016') AND (end_date < '12/31/2017') AND (term_group.cycle_id = cycle_day.cycle_id) AND 
                          (cycle_day.cycle_day_id = period_cycle_day.cycle_day_id) AND (period_cycle_day.period_id = period.period_id) AND (term_group.term_id = term.term_id) AND 
@@ -525,8 +526,13 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
                 Dim sb As New StringBuilder()
 
                 Dim outLine As String
+                Dim tempStr As String
 
-                outLine = (dr.GetValue(0) & ",""" & dr.GetValue(1) & """," & dr.GetValue(2))
+                tempStr = dr.GetValue(1)
+                tempStr = Replace(tempStr, "&#039;", "'")
+                tempStr = Replace(tempStr, "&amp;", "&")
+
+                outLine = (dr.GetValue(0) & ",""" & tempStr & """," & dr.GetValue(2))
                 sw.WriteLine(outLine)
             End While
         End Using
@@ -534,8 +540,9 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
 
 
 
-
-
+        '&#039;
+        '&#039;
+        '&amp;
 
 
 

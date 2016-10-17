@@ -6,6 +6,7 @@ Imports System.Data
 Imports System.Data.OleDb
 Imports System.Text
 Imports System.Object
+Imports WinSCP
 
 
 
@@ -58,6 +59,7 @@ Module Main
         Call timetableStructure()
         Call timetable()
         Call enrollment()
+        Call readUploadDetails()
     End Sub
 
 
@@ -567,4 +569,64 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
     End Sub
 
 
+    Sub upload(host As String, userName As String, pass As String, rsa As String)
+        Try
+            ' Setup session options
+            Dim sessionOptions As New SessionOptions
+            With sessionOptions
+                .Protocol = Protocol.Sftp
+                .HostName = host
+                .UserName = userName
+                .Password = pass
+                .SshHostKeyFingerprint = rsa '"ssh-rsa 2048 xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+            End With
+
+            Using session As New Session
+                ' Connect
+                session.Open(sessionOptions)
+
+                ' Upload files
+                Dim transferOptions As New TransferOptions
+                transferOptions.TransferMode = TransferMode.Binary
+
+                Dim transferResult As TransferOperationResult
+                transferResult = session.PutFiles(".\*.csv", "/home/ofgadmin/", False, transferOptions)
+
+                ' Throw on any error
+                transferResult.Check()
+
+                ' Print results
+                For Each transfer In transferResult.Transfers
+                    Console.WriteLine("Upload of {0} succeeded", transfer.FileName)
+                Next
+            End Using
+
+
+        Catch e As Exception
+            Console.WriteLine("Error: {0}", e)
+
+        End Try
+
+    End Sub
+
+    Sub readUploadDetails()
+        Try
+            ' Open the file using a stream reader.
+            Dim directory As String = My.Application.Info.DirectoryPath
+            Using sr As New StreamReader(directory & "\uploadDetails.txt")
+                Dim line As String
+                Dim inputs() As String
+                line = sr.ReadToEnd()
+                inputs = line.Split(";")
+                upload(inputs(0), inputs(1), inputs(2), inputs(3))
+            End Using
+        Catch e As Exception
+            MsgBox(e.Message)
+        End Try
+    End Sub
+
+
+
 End Module
+
+

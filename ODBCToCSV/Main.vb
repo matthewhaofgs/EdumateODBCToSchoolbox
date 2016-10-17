@@ -500,8 +500,8 @@ AND
         Dim commandstring As String
         commandstring = "
 SELECT DISTINCT CONCAT(course.code, class.identifier) AS CLASS_CODE, class.class, student.student_number
-FROM            OFGSODBC.CLASS_ENROLLMENT, OFGSODBC.STUDENT, class, course
-WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrollment.class_id = class.class_id) AND (class.course_id = course.course_id)"
+FROM            OFGSODBC.CLASS_ENROLLMENT, OFGSODBC.STUDENT, class, course, academic_year
+WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrollment.class_id = class.class_id) AND (class.course_id = course.course_id) AND (class.academic_year_id = academic_year.academic_year_id) AND academic_year.academic_year = '" & Date.Today.Year & "'"
 
 
         Dim sw As New StreamWriter(".\enrollment.csv")

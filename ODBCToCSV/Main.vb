@@ -120,7 +120,7 @@ from schoolbox_students
                             users.Last.Campus = "Senior"
                         End If
                     Catch
-                        users.Last.Campus = ""
+                        users.Last.Campus = "Junior"
                     End Try
                 End If
 

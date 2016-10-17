@@ -590,7 +590,7 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
                 transferOptions.TransferMode = TransferMode.Binary
 
                 Dim transferResult As TransferOperationResult
-                transferResult = session.PutFiles(".\*.csv", "/home/ofgadmin/", False, transferOptions)
+                transferResult = session.PutFiles(".\*.csv", "./", False, transferOptions)
 
                 ' Throw on any error
                 transferResult.Check()

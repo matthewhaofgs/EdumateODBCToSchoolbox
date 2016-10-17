@@ -85,7 +85,8 @@ username,
 student_number,
 firstname,
 surname,
-birthdate
+birthdate,
+form_name
 from schoolbox_students
 "
         Dim users As New List(Of user)
@@ -111,7 +112,18 @@ from schoolbox_students
                 users.Last.SchoolboxUserID = ""
                 users.Last.Title = ""
                 users.Last.Role = "Senior Students"
-                users.Last.Campus = "Senior"
+                If Not dr.IsDBNull(5) Then
+                    Try
+                        If Int(Right(dr.GetValue(5), 2)) < 7 Then
+                            users.Last.Campus = "Junior"
+                        Else
+                            users.Last.Campus = "Senior"
+                        End If
+                    Catch
+                        users.Last.Campus = ""
+                    End Try
+                End If
+
                 users.Last.Password = ""
                 users.Last.AltEmail = ""
                 users.Last.Year = ""
@@ -488,8 +500,14 @@ AND
                 Dim sb As New StringBuilder()
 
                 Dim outLine As String
+                Dim tempStr As String
 
-                outLine = (dr.GetValue(0) & "," & dr.GetValue(1) & "," & dr.GetValue(2) & "," & dr.GetValue(3) & "," & dr.GetValue(4) & ",""" & dr.GetValue(5) & """," & dr.GetValue(6) & "," & dr.GetValue(7))
+                tempStr = dr.GetValue(5)
+                tempStr = Replace(tempStr, "&#039;", "'")
+                tempStr = Replace(tempStr, "&amp;", "&")
+
+
+                outLine = (dr.GetValue(0) & "," & dr.GetValue(1) & "," & dr.GetValue(2) & "," & dr.GetValue(3) & "," & dr.GetValue(4) & ",""" & tempStr & """," & dr.GetValue(6) & "," & dr.GetValue(7))
                 sw.WriteLine(outLine)
             End While
         End Using

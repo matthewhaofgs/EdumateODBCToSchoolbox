@@ -113,28 +113,31 @@ from schoolbox_students
                 users.Last.Delete = ""
                 users.Last.SchoolboxUserID = ""
                 users.Last.Title = ""
-                users.Last.Role = "Senior Students"
+
                 If Not dr.IsDBNull(5) Then
                     Try
                         If Int(Right(dr.GetValue(5), 2)) < 7 Then
                             users.Last.Campus = "Junior"
+                            users.Last.Role = "Junior Students"
                         Else
                             users.Last.Campus = "Senior"
+                            users.Last.Role = "Senior Students"
                         End If
                     Catch
                         users.Last.Campus = "Junior"
+                        users.Last.Role = "Junior Students"
                     End Try
                 End If
 
                 users.Last.Password = ""
-                users.Last.AltEmail = ""
+                users.Last.AltEmail = dr.GetValue(0) & "@ofgsstudents.com"
                 users.Last.Year = ""
                 users.Last.House = ""
                 users.Last.ResidentialHouse = ""
                 users.Last.EPortfolio = "Y"
                 users.Last.HideContactDetails = "Y"
                 users.Last.HideTimetable = "N"
-                users.Last.EmailAddressFromUsername = "Y"
+                users.Last.EmailAddressFromUsername = "N"
                 users.Last.UseExternalMailClient = "N"
                 users.Last.EnableWebmailTab = "Y"
                 users.Last.Superuser = "N"
@@ -313,7 +316,7 @@ left join contact on carer.contact_id = contact.contact_id
                 users.Last.EPortfolio = "N"
                 users.Last.HideContactDetails = "Y"
                 users.Last.HideTimetable = "Y"
-                users.Last.EmailAddressFromUsername = "Y"
+                users.Last.EmailAddressFromUsername = "N"
                 users.Last.UseExternalMailClient = "Y"
                 users.Last.EnableWebmailTab = "N"
                 users.Last.Superuser = "N"
@@ -349,6 +352,88 @@ left join contact on carer.contact_id = contact.contact_id
             End While
 
         End Using
+
+
+        'Parents (Spouse) **********************
+        commandString = "
+select
+schoolbox_parents.spouse_email,
+schoolbox_parents.spouse_carer_number,
+contact.firstname,
+contact.surname
+
+
+
+from schoolbox_parents
+left join carer on schoolbox_parents.spouse_carer_number = carer.carer_number
+left join contact on carer.contact_id = contact.contact_id
+
+"
+
+        Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
+            conn.Open()
+
+            'define the command object to execute
+            Dim command As New System.Data.Odbc.OdbcCommand(commandString, conn)
+            command.Connection = conn
+            command.CommandText = commandString
+
+            Dim dr As System.Data.Odbc.OdbcDataReader
+            dr = command.ExecuteReader
+
+            Dim i As Integer = 0
+            While dr.Read()
+                users.Add(New user)
+
+                users.Last.Delete = ""
+                users.Last.SchoolboxUserID = ""
+                users.Last.Title = ""
+                users.Last.Role = "Parents"
+                users.Last.Campus = "Senior"
+                users.Last.Password = ""
+                users.Last.AltEmail = ""
+                users.Last.Year = ""
+                users.Last.ResidentialHouse = ""
+                users.Last.EPortfolio = "N"
+                users.Last.HideContactDetails = "Y"
+                users.Last.HideTimetable = "Y"
+                users.Last.EmailAddressFromUsername = "N"
+                users.Last.UseExternalMailClient = "Y"
+                users.Last.EnableWebmailTab = "N"
+                users.Last.Superuser = "N"
+                users.Last.AccountEnabled = "Y"
+                users.Last.HomePhone = ""
+                users.Last.MobilePhone = ""
+                users.Last.WorkPhone = ""
+                users.Last.DateOfBirth = ""
+                users.Last.Address = ""
+                users.Last.Suburb = ""
+                users.Last.Postcode = ""
+                If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
+                If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
+                If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
+                If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
+
+
+                For Each a In studentParents
+                    If users.Last.ExternalID = a.parent_id Then
+                        If users.Last.ChildExternalIDs = "" Then
+                            users.Last.ChildExternalIDs = a.student_id
+                        Else
+                            users.Last.ChildExternalIDs = users.Last.ChildExternalIDs & "," & a.student_id
+                        End If
+                    End If
+
+                Next
+                users.Last.ChildExternalIDs = """" & users.Last.ChildExternalIDs & """"
+
+
+
+
+            End While
+
+        End Using
+
 
 
         Dim sw As New StreamWriter(".\user.csv")

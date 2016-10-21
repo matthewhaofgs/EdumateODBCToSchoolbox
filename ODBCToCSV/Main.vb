@@ -383,51 +383,52 @@ left join contact on carer.contact_id = contact.contact_id
 
             Dim i As Integer = 0
             While dr.Read()
-                users.Add(New user)
+                If Not dr.IsDBNull(0) Then
+                    users.Add(New user)
 
-                users.Last.Delete = ""
-                users.Last.SchoolboxUserID = ""
-                users.Last.Title = ""
-                users.Last.Role = "Parents"
-                users.Last.Campus = "Senior"
-                users.Last.Password = ""
-                users.Last.AltEmail = ""
-                users.Last.Year = ""
-                users.Last.ResidentialHouse = ""
-                users.Last.EPortfolio = "N"
-                users.Last.HideContactDetails = "Y"
-                users.Last.HideTimetable = "Y"
-                users.Last.EmailAddressFromUsername = "N"
-                users.Last.UseExternalMailClient = "Y"
-                users.Last.EnableWebmailTab = "N"
-                users.Last.Superuser = "N"
-                users.Last.AccountEnabled = "Y"
-                users.Last.HomePhone = ""
-                users.Last.MobilePhone = ""
-                users.Last.WorkPhone = ""
-                users.Last.DateOfBirth = ""
-                users.Last.Address = ""
-                users.Last.Suburb = ""
-                users.Last.Postcode = ""
-                If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
-                If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
-                If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
-                If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
+                    users.Last.Delete = ""
+                    users.Last.SchoolboxUserID = ""
+                    users.Last.Title = ""
+                    users.Last.Role = "Parents"
+                    users.Last.Campus = "Senior"
+                    users.Last.Password = ""
+                    users.Last.AltEmail = ""
+                    users.Last.Year = ""
+                    users.Last.ResidentialHouse = ""
+                    users.Last.EPortfolio = "N"
+                    users.Last.HideContactDetails = "Y"
+                    users.Last.HideTimetable = "Y"
+                    users.Last.EmailAddressFromUsername = "N"
+                    users.Last.UseExternalMailClient = "Y"
+                    users.Last.EnableWebmailTab = "N"
+                    users.Last.Superuser = "N"
+                    users.Last.AccountEnabled = "Y"
+                    users.Last.HomePhone = ""
+                    users.Last.MobilePhone = ""
+                    users.Last.WorkPhone = ""
+                    users.Last.DateOfBirth = ""
+                    users.Last.Address = ""
+                    users.Last.Suburb = ""
+                    users.Last.Postcode = ""
+                    If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
+                    If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
+                    If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
+                    If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
 
 
-                For Each a In studentParents
-                    If users.Last.ExternalID = a.parent_id Then
-                        If users.Last.ChildExternalIDs = "" Then
-                            users.Last.ChildExternalIDs = a.student_id
-                        Else
-                            users.Last.ChildExternalIDs = users.Last.ChildExternalIDs & "," & a.student_id
+                    For Each a In studentParents
+                        If users.Last.ExternalID = a.parent_id Then
+                            If users.Last.ChildExternalIDs = "" Then
+                                users.Last.ChildExternalIDs = a.student_id
+                            Else
+                                users.Last.ChildExternalIDs = users.Last.ChildExternalIDs & "," & a.student_id
+                            End If
                         End If
-                    End If
 
-                Next
-                users.Last.ChildExternalIDs = """" & users.Last.ChildExternalIDs & """"
+                    Next
+                    users.Last.ChildExternalIDs = """" & users.Last.ChildExternalIDs & """"
 
-
+                End If
 
 
             End While

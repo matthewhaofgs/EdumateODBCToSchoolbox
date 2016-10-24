@@ -1,14 +1,10 @@
 ﻿Imports System
 Imports System.IO
-
-
 Imports System.Data
 Imports System.Data.OleDb
 Imports System.Text
 Imports System.Object
 Imports WinSCP
-
-
 
 Class studentParent
     Public student_id As Integer
@@ -48,39 +44,41 @@ Class user
     Public Postcode As String
 End Class
 
+Class uploadServer
+    Public host As String
+    Public userName As String
+    Public pass As String
+    Public rsa As String
+End Class
+
+
+Class configSettings
+    Public connectionString As String
+    Public uploadServers As List(Of uploadServer)
+    Public studentEmailDomain As String
+End Class
+
 
 Module Main
 
     Public Sub Main(ByVal sArgs() As String)
 
 
+        Dim config As configSettings
+        config = readConfig()
 
-        Call user()
-        Call timetableStructure()
-        Call timetable()
-        Call enrollment()
-        Call readUploadDetails()
+        Call user(config)
+        Call timetableStructure(config)
+        Call timetable(config)
+        Call enrollment(config)
+        Call uploadFiles(config)
     End Sub
 
 
-    Private Function readConnectionString()
-        Try
-            ' Open the file using a stream reader.
-            Dim directory As String = My.Application.Info.DirectoryPath
-            Using sr As New StreamReader(directory & "\connectionString.txt")
-                Dim line As String
-                line = sr.ReadToEnd()
-                readConnectionString = line
-            End Using
-        Catch e As Exception
-            MsgBox(e.Message)
-        End Try
-    End Function
-
-    Sub user()
+    Sub user(config As configSettings)
 
         ' Students ****************
-        Dim ConnStr As String = readConnectionString()
+        Dim ConnectionString As String = config.connectionString
         Dim commandString As String = "
 select
 username,
@@ -94,7 +92,7 @@ from schoolbox_students
         Dim users As New List(Of user)
 
 
-        Dim ConnectionString As String = readConnectionString()
+
         Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
             conn.Open()
 
@@ -130,7 +128,7 @@ from schoolbox_students
                 End If
 
                 users.Last.Password = ""
-                users.Last.AltEmail = dr.GetValue(0) & "@ofgsstudents.com"
+                users.Last.AltEmail = dr.GetValue(0) & config.studentEmailDomain
                 users.Last.Year = ""
                 users.Last.House = ""
                 users.Last.ResidentialHouse = ""
@@ -458,7 +456,7 @@ left join contact on carer.contact_id = contact.contact_id
 
 
 
-    Sub timetableStructure()
+    Sub timetableStructure(config As configSettings)
 
         Dim sep As String = ","
         Dim commandString As String
@@ -479,7 +477,7 @@ ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start
 
         Dim sw As New StreamWriter(".\timetableStructure.csv")
 
-        Dim ConnectionString As String = readConnectionString()
+        Dim ConnectionString As String = config.connectionString
         Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
             conn.Open()
 
@@ -515,7 +513,7 @@ ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start
     End Sub
 
 
-    Sub timetable()
+    Sub timetable(config As configSettings)
         Dim commandstring As String
         commandstring = "
 SELECT DISTINCT
@@ -568,7 +566,7 @@ AND
 
         Dim sw As New StreamWriter(".\timetable.csv")
 
-        Dim ConnectionString As String = readConnectionString()
+        Dim ConnectionString As String = config.connectionString
         Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
             conn.Open()
 
@@ -602,7 +600,7 @@ AND
 
     End Sub
 
-    Sub enrollment()
+    Sub enrollment(config As configSettings)
         Dim commandstring As String
         commandstring = "
 SELECT DISTINCT CONCAT(course.code, class.identifier) AS CLASS_CODE, class.class, student.student_number
@@ -612,7 +610,7 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
 
         Dim sw As New StreamWriter(".\enrollment.csv")
 
-        Dim ConnectionString As String = readConnectionString()
+        Dim ConnectionString As String = config.connectionString
         Using conn As New System.Data.Odbc.OdbcConnection(ConnectionString)
             conn.Open()
 
@@ -695,21 +693,51 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
 
     End Sub
 
-    Sub readUploadDetails()
+    Sub uploadFiles(config As configSettings)
+        For Each i In config.uploadServers
+            upload(i.host, i.userName, i.pass, i.rsa)
+        Next
+    End Sub
+
+    Private Function readConfig()
+        Dim config As New configSettings()
+        config.uploadServers = New List(Of uploadServer)
+
         Try
             ' Open the file using a stream reader.
             Dim directory As String = My.Application.Info.DirectoryPath
-            Using sr As New StreamReader(directory & "\uploadDetails.txt")
+
+
+
+            Using sr As New StreamReader(directory & "\config.ini")
                 Dim line As String
-                Dim inputs() As String
-                line = sr.ReadToEnd()
-                inputs = line.Split(";")
-                upload(inputs(0), inputs(1), inputs(2), inputs(3))
+                While Not sr.EndOfStream
+                    line = sr.ReadLine
+
+                    Select Case True
+                        Case Left(line, 17) = "connectionstring="
+                            config.connectionString = Mid(line, 18)
+                        Case Left(line, 13) = "uploadserver="
+                            line = Mid(line, 14)
+                            Dim split As String() = line.Split(";")
+                            config.uploadServers.Add(New uploadServer)
+                            config.uploadServers.Last.host = split(0)
+                            config.uploadServers.Last.userName = split(1)
+                            config.uploadServers.Last.pass = split(2)
+                            config.uploadServers.Last.rsa = split(3)
+                        Case Left(line, 19) = "studentemaildomain="
+                            config.studentEmailDomain = Mid(line, 20)
+                    End Select
+
+                End While
+
+                readConfig = config
             End Using
+
         Catch e As Exception
             MsgBox(e.Message)
         End Try
-    End Sub
+    End Function
 
 
 

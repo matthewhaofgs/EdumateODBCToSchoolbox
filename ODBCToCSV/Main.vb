@@ -51,13 +51,11 @@ Class uploadServer
     Public rsa As String
 End Class
 
-
 Class configSettings
     Public connectionString As String
     Public uploadServers As List(Of uploadServer)
     Public studentEmailDomain As String
 End Class
-
 
 Module Main
 

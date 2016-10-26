@@ -477,15 +477,14 @@ left join contact on carer.contact_id = contact.contact_id
         Dim sep As String = ","
         Dim commandString As String
         commandString = "
-SELECT        CASE WHEN substr(timetable.timetable, 6, 6) = 'Year 1' THEN 'Senior' ELSE substr(timetable.timetable, 6, 6) END AS Expr1, CONCAT(CONCAT(term.term, ' '), 
-                         substr(timetable.timetable, 1, 4)) AS Expr2, term.start_date, term.end_date, term.cycle_start_day, cycle_day.day_index, period.period, period.start_time, 
-                         period.end_time
+SELECT DISTINCT 
+                         CASE WHEN substr(timetable.timetable, 6, 6) = 'Year 1' THEN 'Senior' ELSE substr(timetable.timetable, 6, 6) END AS Expr1, 
+                         REPLACE(CONCAT(CONCAT(term.term, ' '), substr(timetable.timetable, 1, 4)), 'Term 0', 'Term 4') AS Expr2, term.start_date, term.end_date, term.cycle_start_day, 
+                         cycle_day.day_index, period.period, period.start_time, period.end_time
 FROM            OFGSODBC.TERM_GROUP, cycle_day, period_cycle_day, period, term, timetable
 WHERE        (start_date > '01/01/2016') AND (end_date < '12/31/2016') AND (term_group.cycle_id = cycle_day.cycle_id) AND 
                          (cycle_day.cycle_day_id = period_cycle_day.cycle_day_id) AND (period_cycle_day.period_id = period.period_id) AND (term_group.term_id = term.term_id) AND 
-                         (term.timetable_id = timetable.timetable_id)
-ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start_time"
-
+                         (term.timetable_id = timetable.timetable_id)"
 
 
 

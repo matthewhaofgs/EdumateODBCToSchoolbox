@@ -458,6 +458,7 @@ left join contact on carer.contact_id = contact.contact_id
 
 
         Next
+        sw.Close()
 
 
     End Sub
@@ -480,7 +481,7 @@ SELECT        CASE WHEN substr(timetable.timetable, 6, 6) = 'Year 1' THEN 'Senio
                          substr(timetable.timetable, 1, 4)) AS Expr2, term.start_date, term.end_date, term.cycle_start_day, cycle_day.day_index, period.period, period.start_time, 
                          period.end_time
 FROM            OFGSODBC.TERM_GROUP, cycle_day, period_cycle_day, period, term, timetable
-WHERE        (start_date > '01/01/2016') AND (end_date < '12/31/2017') AND (term_group.cycle_id = cycle_day.cycle_id) AND 
+WHERE        (start_date > '01/01/2016') AND (end_date < '12/31/2016') AND (term_group.cycle_id = cycle_day.cycle_id) AND 
                          (cycle_day.cycle_day_id = period_cycle_day.cycle_day_id) AND (period_cycle_day.period_id = period.period_id) AND (term_group.term_id = term.term_id) AND 
                          (term.timetable_id = timetable.timetable_id)
 ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start_time"
@@ -519,7 +520,7 @@ ORDER BY timetable.timetable, term.start_date, cycle_day.day_index, period.start
         End Using
 
 
-
+        sw.Close()
 
 
 
@@ -612,7 +613,7 @@ AND
                 sw.WriteLine(outLine)
             End While
         End Using
-
+        sw.Close()
     End Sub
 
     Sub enrollment(config As configSettings)
@@ -663,7 +664,7 @@ WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrol
         '&#039;
         '&amp;
 
-
+        sw.Close()
 
     End Sub
 

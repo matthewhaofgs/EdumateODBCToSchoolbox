@@ -104,57 +104,58 @@ from schoolbox_students
 
             Dim i As Integer = 0
             While dr.Read()
-                users.Add(New user)
+                If Not dr.IsDBNull(0) Then
+                    users.Add(New user)
 
-                users.Last.Delete = ""
-                users.Last.SchoolboxUserID = ""
-                users.Last.Title = ""
+                    users.Last.Delete = ""
+                    users.Last.SchoolboxUserID = ""
+                    users.Last.Title = ""
 
-                If Not dr.IsDBNull(5) Then
-                    Try
-                        If Int(Right(dr.GetValue(5), 2)) < 7 Then
+                    If Not dr.IsDBNull(5) Then
+                        Try
+                            If Int(Right(dr.GetValue(5), 2)) < 7 Then
+                                users.Last.Campus = "Junior"
+                                users.Last.Role = "Junior Students"
+                            Else
+                                users.Last.Campus = "Senior"
+                                users.Last.Role = "Senior Students"
+                            End If
+                        Catch
                             users.Last.Campus = "Junior"
                             users.Last.Role = "Junior Students"
-                        Else
-                            users.Last.Campus = "Senior"
-                            users.Last.Role = "Senior Students"
-                        End If
-                    Catch
-                        users.Last.Campus = "Junior"
-                        users.Last.Role = "Junior Students"
-                    End Try
+                        End Try
+                    End If
+
+                    users.Last.Password = ""
+                    users.Last.AltEmail = dr.GetValue(0) & config.studentEmailDomain
+                    users.Last.Year = ""
+                    users.Last.House = ""
+                    users.Last.ResidentialHouse = ""
+                    users.Last.EPortfolio = "Y"
+                    users.Last.HideContactDetails = "Y"
+                    users.Last.HideTimetable = "N"
+                    users.Last.EmailAddressFromUsername = "N"
+                    users.Last.UseExternalMailClient = "N"
+                    users.Last.EnableWebmailTab = "Y"
+                    users.Last.Superuser = "N"
+                    users.Last.AccountEnabled = "Y"
+                    users.Last.ChildExternalIDs = ""
+                    users.Last.HomePhone = ""
+                    users.Last.MobilePhone = ""
+                    users.Last.WorkPhone = ""
+                    users.Last.Address = ""
+                    users.Last.Suburb = ""
+                    users.Last.Postcode = ""
+
+
+
+                    If Not dr.IsDBNull(0) Then users.Last.Username = dr.GetValue(0)
+                    If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
+                    If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
+                    If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
+                    If Not dr.IsDBNull(4) Then users.Last.DateOfBirth = ddMMYYYY_to_yyyyMMdd(dr.GetValue(4))
+
                 End If
-
-                users.Last.Password = ""
-                users.Last.AltEmail = dr.GetValue(0) & config.studentEmailDomain
-                users.Last.Year = ""
-                users.Last.House = ""
-                users.Last.ResidentialHouse = ""
-                users.Last.EPortfolio = "Y"
-                users.Last.HideContactDetails = "Y"
-                users.Last.HideTimetable = "N"
-                users.Last.EmailAddressFromUsername = "N"
-                users.Last.UseExternalMailClient = "N"
-                users.Last.EnableWebmailTab = "Y"
-                users.Last.Superuser = "N"
-                users.Last.AccountEnabled = "Y"
-                users.Last.ChildExternalIDs = ""
-                users.Last.HomePhone = ""
-                users.Last.MobilePhone = ""
-                users.Last.WorkPhone = ""
-                users.Last.Address = ""
-                users.Last.Suburb = ""
-                users.Last.Postcode = ""
-
-
-
-                If Not dr.IsDBNull(0) Then users.Last.Username = dr.GetValue(0)
-                If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
-                If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
-                If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
-                If Not dr.IsDBNull(4) Then users.Last.DateOfBirth = ddMMYYYY_to_yyyyMMdd(dr.GetValue(4))
-
-
 
             End While
             conn.Close()
@@ -187,6 +188,7 @@ from schoolbox_staff
             dr = command.ExecuteReader
 
             While dr.Read()
+
                 users.Add(New user)
 
                 users.Last.Delete = ""
@@ -406,7 +408,22 @@ left join contact on carer.contact_id = contact.contact_id
                     users.Last.Address = ""
                     users.Last.Suburb = ""
                     users.Last.Postcode = ""
-                    If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
+
+                    If Not dr.IsDBNull(0) Then
+                        Dim duplicateUser As Boolean
+                        duplicateUser = False
+                        For Each z In users
+                            If Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1) = z.Username Then
+                                duplicateUser = True
+                            End If
+                        Next
+                        If duplicateUser = False Then
+                            users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
+                        Else
+                            users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1) & "_parent"
+                        End If
+                    End If
+
                     If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
                     If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
                     If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
@@ -602,8 +619,8 @@ AND
         Dim commandstring As String
         commandstring = "
 SELECT DISTINCT CONCAT(course.code, class.identifier) AS CLASS_CODE, class.class, student.student_number
-FROM            OFGSODBC.CLASS_ENROLLMENT, OFGSODBC.STUDENT, class, course, academic_year
-WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrollment.class_id = class.class_id) AND (class.course_id = course.course_id) AND (class.academic_year_id = academic_year.academic_year_id) AND academic_year.academic_year = '" & Date.Today.Year & "'"
+FROM            OFGSODBC.CLASS_ENROLLMENT, OFGSODBC.STUDENT, class, course, academic_year, schoolbox_students
+WHERE        (class_enrollment.student_id = student.student_id) AND (class_enrollment.class_id = class.class_id) AND (student.student_number = schoolbox_students.student_number ) AND (class.course_id = course.course_id) AND (class.academic_year_id = academic_year.academic_year_id) AND academic_year.academic_year = '" & Date.Today.Year & "'"
 
 
         Dim sw As New StreamWriter(".\enrollment.csv")

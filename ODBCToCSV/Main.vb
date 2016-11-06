@@ -308,7 +308,6 @@ left join contact on carer.contact_id = contact.contact_id
                 users.Last.Role = "Parents"
                 users.Last.Campus = "Senior"
                 users.Last.Password = ""
-                users.Last.AltEmail = ""
                 users.Last.Year = ""
                 users.Last.ResidentialHouse = ""
                 users.Last.EPortfolio = "N"
@@ -327,6 +326,7 @@ left join contact on carer.contact_id = contact.contact_id
                 users.Last.Suburb = ""
                 users.Last.Postcode = ""
                 If Not dr.IsDBNull(0) Then users.Last.Username = Strings.Left(dr.GetValue(0), Strings.InStr(dr.GetValue(0), "@") - 1)
+                If Not dr.IsDBNull(0) Then users.Last.AltEmail = dr.GetValue(0)
                 If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
                 If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
                 If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"
@@ -390,7 +390,6 @@ left join contact on carer.contact_id = contact.contact_id
                     users.Last.Role = "Parents"
                     users.Last.Campus = "Senior"
                     users.Last.Password = ""
-                    users.Last.AltEmail = ""
                     users.Last.Year = ""
                     users.Last.ResidentialHouse = ""
                     users.Last.EPortfolio = "N"
@@ -424,6 +423,7 @@ left join contact on carer.contact_id = contact.contact_id
                         End If
                     End If
 
+                    If Not dr.IsDBNull(0) Then users.Last.AltEmail = dr.GetValue(0)
                     If Not dr.IsDBNull(1) Then users.Last.ExternalID = dr.GetValue(1)
                     If Not dr.IsDBNull(2) Then users.Last.FirstName = """" & dr.GetValue(2) & """"
                     If Not dr.IsDBNull(3) Then users.Last.Surname = """" & dr.GetValue(3) & """"

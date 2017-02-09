@@ -1,3 +1,12 @@
+===
+
+This is now included in https://github.com/matthewhaofgs/OFGS-Account-Sync
+
+Newer changes will be there
+
+===
+
+
 # ODBCToCSV
 Connects to a cloud hosted instance of Edumate, and populate the import templates for schoolbox. 
 
